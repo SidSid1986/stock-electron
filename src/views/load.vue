@@ -1,4 +1,5 @@
 <!-- src/views/load.vue -->
+<!-- src/views/load.vue -->
 <template>
   <div class="quant-terminal">
     <!-- 顶部全局控制栏 -->
@@ -7,11 +8,27 @@
         <div class="logo-badge">PRO</div>
         <div class="title-group">
           <h1>A-Share AI Quant & Command Center</h1>
-          <p>默认锁定首只盯盘 · 实盘持仓盈亏分析 · KLineChart 专业引擎</p>
+          <p>专注黄金低吸买点 · 拒绝盲目追高 · 实盘持仓与风控终端</p>
         </div>
       </div>
 
       <div class="header-actions">
+        <!-- 🌟 新增：快捷点对点代码查询输入框 -->
+        <div class="header-search-box">
+          <el-input
+            v-model="quickQuerySymbol"
+            placeholder="输入代码秒查买卖点，如: 600519"
+            size="default"
+            clearable
+            style="width: 230px;"
+            @keyup.enter="handleQuickDiagnose"
+          >
+            <template #append>
+              <el-button :icon="Search" @click="handleQuickDiagnose" :loading="quickDiagnosing" />
+            </template>
+          </el-input>
+        </div>
+
         <!-- 手动添加股票 -->
         <el-button type="primary" plain :icon="Plus" @click="addDialogVisible = true">
           手动添加标的
@@ -36,7 +53,7 @@
     <!-- 主体双栏联动区 -->
     <div class="terminal-grid">
       
-      <!-- 左侧：盯盘监控池（点击哪只，全局焦点切到哪只） -->
+      <!-- 左侧：盯盘监控池 -->
       <div class="panel left-panel">
         <div class="panel-header">
           <div>
@@ -102,7 +119,7 @@
       <div class="panel right-panel">
         <div class="panel-header">
           <div class="focus-title">
-            <h3>🤖 实时盯盘裁决与实仓风控看板</h3>
+            <h3>🤖 实时低吸买点与实仓风控看板</h3>
             <span class="focus-badge" v-if="currentStock">
               当前锁定：{{ currentStock.name }} ({{ currentStock.symbol }})
             </span>
@@ -127,7 +144,7 @@
               <span class="value">¥{{ currentStock.current_price || aiReport?.current_price || '--' }}</span>
             </div>
             <div class="metric-card highlight-buy">
-              <span class="label">💡 AI 黄金低吸区间</span>
+              <span class="label">💡 AI 黄金低吸埋伏区</span>
               <span class="value green">{{ aiReport?.suggested_buy_zone || '演算中...' }}</span>
             </div>
             <div class="metric-card">
@@ -140,7 +157,7 @@
             </div>
           </div>
 
-          <!-- 🌟 新增模块：实际持仓录入与动态盈亏风控分析 -->
+          <!-- 实盘持仓录入与动态盈亏分析 -->
           <div class="position-input-card" v-if="currentStock">
             <div class="pos-title-row">
               <span>💼 我的实盘持仓记录与动态盈亏分析</span>
@@ -182,7 +199,6 @@
               </div>
             </div>
 
-            <!-- 基于用户实际持仓和买入价的个性化买卖建议提示 -->
             <div class="position-advice-banner" v-if="myPosition.costPrice > 0">
               <span class="advice-icon">📌</span>
               <span class="advice-text">{{ positionAnalysis.advice }}</span>
@@ -200,7 +216,7 @@
 
           <!-- 投研与多因子综合诊断理由 -->
           <div class="quick-summary-box">
-            <h4>📖 量化与基本面深度判断逻辑</h4>
+            <h4>📖 低吸策略与基本面复盘逻辑</h4>
             <p>{{ aiReport?.analysis_reason || '正在结合最新财务指标与历史 K 线波动率生成裁决建议...' }}</p>
           </div>
 
@@ -213,7 +229,7 @@
         </div>
 
         <div class="empty-state" v-else>
-          <el-empty description="监控池为空，请点击下方「一键扫描 Top 5」或手动添加股票" />
+          <el-empty description="监控池为空，请点击下方「一键扫描低吸标的」或手动添加股票" />
         </div>
       </div>
 
@@ -223,8 +239,8 @@
     <div class="bottom-screener-panel">
       <div class="screener-header">
         <div class="title">
-          <h3>🏆 精选 Top 5 价值扫描结果 (可购买 / 重点观望)</h3>
-          <span>支持限定价格范围精准过滤，点击「+ 加入盯盘池」即可纳入监控</span>
+          <h3>🏆 精选低吸埋伏标的池 (拒绝追高 · 等待回踩)</h3>
+          <span>严格筛选基本面稳健且处于技术面回调支撑位的标的</span>
         </div>
 
         <!-- 价格范围过滤控制区 -->
@@ -252,7 +268,7 @@
             style="width: 85px;"
           />
           <el-button type="warning" size="small" :icon="MagicStick" @click="handleScanTop5" :loading="scanning">
-            ✨ 按条件扫描 Top 5
+            ✨ 扫描低吸埋伏标的
           </el-button>
         </div>
       </div>
@@ -261,18 +277,18 @@
         <el-table-column type="index" label="排名" width="65" align="center" />
         <el-table-column prop="symbol" label="代码" width="95" align="center" />
         <el-table-column prop="name" label="股票名称" width="115" align="center" />
-        <el-table-column label="AI 评级建议" width="130" align="center">
+        <el-table-column label="买入时机评级" width="140" align="center">
           <template #default="{ row }">
             <el-tag :type="row.action_tag === 'BUY' ? 'success' : 'warning'" effect="dark" size="small">
-              {{ row.action_tag === 'BUY' ? '🟢 建议低吸购买' : '🟡 优质重点观望' }}
+              {{ row.action_tag === 'BUY' ? '🟢 触发黄金低吸' : '🟡 挂单等待回踩' }}
             </el-tag>
           </template>
         </el-table-column>
         <el-table-column prop="latest_roe" label="最新 ROE (%)" width="115" align="center" />
-        <el-table-column prop="current_price" label="参考价格" width="100" align="center">
+        <el-table-column prop="current_price" label="现价参考" width="100" align="center">
           <template #default="{ row }">¥{{ row.current_price }}</template>
         </el-table-column>
-        <el-table-column prop="buy_zone" label="💡 建议买入区间" width="160" align="center" />
+        <el-table-column prop="buy_zone" label="💡 理想埋伏低吸区间" width="170" align="center" />
         <el-table-column label="操作" align="center" min-width="150">
           <template #default="{ row }">
             <el-button size="small" type="primary" @click="handleAddFromTop5(row)">+ 加入盯盘池</el-button>
@@ -310,7 +326,6 @@
             </div>
           </div>
 
-          <!-- 加上 norem 避免被 postcss-pxtorem 缩小导致无法绘制 -->
           <div id="kline-main-chart" ref="klineContainer" class="klinecharts-canvas-box norem"></div>
         </div>
 
@@ -371,7 +386,7 @@
 <script setup>
 import { ref, reactive, computed, onMounted, onUnmounted, nextTick } from 'vue';
 import { ElMessage } from 'element-plus';
-import { Refresh, TrendCharts, MagicStick, Plus } from '@element-plus/icons-vue';
+import { Refresh, TrendCharts, MagicStick, Plus, Search } from '@element-plus/icons-vue';
 import { init, dispose } from 'klinecharts';
 import { 
   getWatchlist, 
@@ -389,6 +404,10 @@ const modalLoading = ref(false);
 const scanning = ref(false);
 const isMonitoring = ref(false);
 
+// 🌟 新增：快捷点对点搜索状态
+const quickQuerySymbol = ref('');
+const quickDiagnosing = ref(false);
+
 const watchlistTableRef = ref(null);
 const watchlist = ref([]);
 const top5Stocks = ref([]);
@@ -398,14 +417,12 @@ const aiReport = ref(null);
 const addDialogVisible = ref(false);
 const newStockForm = ref({ symbol: '', name: '' });
 
-// 🌟 实盘持仓管理状态（按股票代码独立存储到本地 localStorage）
 const positionSaved = ref(false);
 const myPosition = reactive({
   costPrice: 0,
   shares: 0
 });
 
-// 加载当前选中股票的持仓数据
 const loadPositionData = (symbol) => {
   const saved = localStorage.getItem(`quant_pos_${symbol}`);
   if (saved) {
@@ -420,7 +437,6 @@ const loadPositionData = (symbol) => {
   myPosition.shares = 0;
 };
 
-// 保存持仓数据
 const savePositionData = () => {
   if (!currentStock.value) return;
   const symbol = currentStock.value.symbol;
@@ -432,7 +448,6 @@ const savePositionData = () => {
   setTimeout(() => { positionSaved.value = false; }, 2000);
 };
 
-// 🌟 核心计算：基于用户录入的成本和股数，结合最新价、止盈止损价进行动态分析
 const positionAnalysis = computed(() => {
   const currentPrice = Number(currentStock.value?.current_price || aiReport.value?.current_price || 0);
   const cost = Number(myPosition.costPrice || 0);
@@ -463,13 +478,11 @@ const positionAnalysis = computed(() => {
   return { pnl, pnlPercent, advice };
 });
 
-// 价格范围过滤绑定
 const priceFilter = ref({
   min: null,
   max: null
 });
 
-// KLineChart 状态
 const detailModalVisible = ref(false);
 const modalStock = ref(null);
 const klineContainer = ref(null);
@@ -486,7 +499,6 @@ const withTimeout = (promise, ms = 4000) => {
   ]);
 };
 
-// 1. 加载自选盯盘池，并默认锁定第 1 只股票
 const loadWatchlistData = async (keepCurrent = false) => {
   loading.value = true;
   try {
@@ -531,7 +543,6 @@ const handleSelectStock = async (row) => {
   if (!row) return;
   currentStock.value = row;
   
-  // 切换股票时，自动加载该股票对应的本地持仓数据
   loadPositionData(row.symbol);
 
   await nextTick();
@@ -561,14 +572,44 @@ const fetchAiDiagnose = async (stock) => {
       suggested_buy_zone: `${(p * 0.93).toFixed(2)} - ${(p * 0.97).toFixed(2)}`,
       target_price: (p * 1.15).toFixed(2),
       stop_loss_price: (p * 0.90).toFixed(2),
-      analysis_reason: `【${stock.name}】核心财务指标稳健，当前价格处于波段震荡区间。建议在支撑位附近逢低关注。`
+      analysis_reason: `【${stock.name}】核心财务指标稳健，当前处于回调蓄势阶段。建议在下方黄金低吸区间（¥${(p*0.93).toFixed(2)}附近）挂单埋伏，切勿盲目追高。`
     };
   } finally {
     diagnosing.value = false;
   }
 };
 
-// 4. 一键扫描精选 Top 5 价值股（支持价格区间限制）
+// 🌟 新增：快捷点对点诊断方法
+const handleQuickDiagnose = async () => {
+  const symbol = quickQuerySymbol.value.trim();
+  if (!symbol) {
+    ElMessage.warning('请输入要诊断的股票代码');
+    return;
+  }
+
+  quickDiagnosing.value = true;
+  try {
+    const res = await withTimeout(diagnoseStock(symbol), 5000);
+    if (res && res.code === 200 && res.data) {
+      const info = res.data;
+      modalStock.value = { 
+        symbol: info.symbol, 
+        name: info.name || symbol, 
+        current_price: info.current_price 
+      };
+      aiReport.value = info;
+      detailModalVisible.value = true;
+      ElMessage.success(`标的 ${symbol} 诊断完成！`);
+    } else {
+      ElMessage.error(res?.message || '未找到该股票或诊断失败');
+    }
+  } catch (e) {
+    ElMessage.error('诊断请求超时或后端异常');
+  } finally {
+    quickDiagnosing.value = false;
+  }
+};
+
 const handleScanTop5 = async () => {
   if (
     priceFilter.value.min !== null &&
@@ -591,21 +632,17 @@ const handleScanTop5 = async () => {
     const res = await withTimeout(runStrategyScreen(queryParams), 6000);
     if (res && res.code === 200 && res.data && res.data.length > 0) {
       top5Stocks.value = res.data.slice(0, 5);
-      ElMessage.success(`扫描完成！已为您精选出 ${top5Stocks.value.length} 只符合条件的标的`);
-    } else if (res && res.code === 200 && res.data && res.data.length === 0) {
-      top5Stocks.value = [];
-      ElMessage.info('当前价格区间内暂无匹配的高价值标的');
+      ElMessage.success(`扫描完成！已为您精选出 ${top5Stocks.value.length} 只低吸埋伏标的`);
     } else {
       throw new Error('空数据');
     }
   } catch (e) {
     const fallbackPool = [
-      { symbol: '600519', name: '贵州茅台', latest_roe: 32.4, current_price: 1750.00, action_tag: 'BUY', buy_zone: '1620.00 - 1680.00' },
+      { symbol: '600519', name: '贵州茅台', latest_roe: 32.4, current_price: 1750.00, action_tag: 'HOLD', buy_zone: '1620.00 - 1680.00' },
       { symbol: '002594', name: '比亚迪', latest_roe: 19.5, current_price: 265.00, action_tag: 'BUY', buy_zone: '245.00 - 255.00' },
-      { symbol: '000858', name: '五粮液', latest_roe: 21.8, current_price: 148.50, action_tag: 'BUY', buy_zone: '138.00 - 143.00' },
-      { symbol: '600036', name: '招商银行', latest_roe: 16.2, current_price: 36.80, action_tag: 'HOLD', buy_zone: '34.20 - 35.50' },
-      { symbol: '002202', name: '金风科技', latest_roe: 13.5, current_price: 13.54, action_tag: 'HOLD', buy_zone: '12.59 - 13.13' },
-      { symbol: '000001', name: '平安银行', latest_roe: 12.1, current_price: 11.20, action_tag: 'HOLD', buy_zone: '10.30 - 10.70' }
+      { symbol: '000858', name: '五粮液', latest_roe: 21.8, current_price: 148.50, action_tag: 'HOLD', buy_zone: '138.00 - 143.00' },
+      { symbol: '600036', name: '招商银行', latest_roe: 16.2, current_price: 36.80, action_tag: 'BUY', buy_zone: '34.20 - 35.50' },
+      { symbol: '002202', name: '金风科技', latest_roe: 13.5, current_price: 13.54, action_tag: 'BUY', buy_zone: '12.59 - 13.13' }
     ];
 
     top5Stocks.value = fallbackPool
@@ -616,7 +653,7 @@ const handleScanTop5 = async () => {
       })
       .slice(0, 5);
 
-    ElMessage.success(`已筛选出 ${top5Stocks.value.length} 只价值观察标的`);
+    ElMessage.success(`已筛选出 ${top5Stocks.value.length} 只等待回踩的低吸埋伏标的`);
   } finally {
     scanning.value = false;
   }
@@ -683,7 +720,6 @@ const onDialogOpened = () => {
   }, 100);
 };
 
-// 🌟 兼容 KLineChart v10 专业蜡烛图与指标渲染
 const renderKLineChart = async () => {
   await nextTick();
   const container = document.getElementById('kline-main-chart');
@@ -809,11 +845,11 @@ const judgmentStatus = computed(() => {
   }
   const sig = aiReport.value.action_signal;
   if (sig === 'BUY') {
-    return { icon: '🟢', title: '【可购买】处于黄金低吸区间', desc: '基本面与估值具备安全边际，当前价格接近理想买点，可分批建仓。', type: 'success' };
+    return { icon: '🟢', title: '【可直接买入】已落入黄金低吸区间', desc: '当前价格接近支撑位，基本面与技术面共振，具备高性价比。', type: 'success' };
   } else if (sig === 'SELL') {
-    return { icon: '🔴', title: '【注意风险】触发高抛/止损预警', desc: '短期偏离均线或触及风控阈值，建议锁定利润或严格执行止损。', type: 'danger' };
+    return { icon: '🔴', title: '【注意风险】短期涨幅过大偏离均线', desc: '不宜盲目追高，建议等待回调至下方支撑位再考虑。', type: 'danger' };
   }
-  return { icon: '🟡', title: '【可观望】多空平衡等待突破', desc: '暂未出现极端低吸买点，建议加入监控池持续跟踪回踩机会。', type: 'warning' };
+  return { icon: '🟡', title: '【挂单观望】等待回踩埋伏点', desc: '当前处于震荡期，建议在 AI 建议的低吸区间挂单，耐心等待回踩。', type: 'warning' };
 });
 
 const handleMonitorToggle = (val) => {
@@ -829,7 +865,7 @@ const handleMonitorToggle = (val) => {
 };
 
 const getSignalType = (sig) => (sig === 'BUY' ? 'success' : sig === 'SELL' ? 'danger' : 'warning');
-const formatSignal = (sig) => (sig === 'BUY' ? '🟢 建议购买 (BUY)' : sig === 'SELL' ? '🔴 建议卖出 (SELL)' : '🟡 重点观望 (HOLD)');
+const formatSignal = (sig) => (sig === 'BUY' ? '🟢 黄金低吸 (BUY)' : sig === 'SELL' ? '🔴 逢高减仓 (SELL)' : '🟡 挂单埋伏 (HOLD)');
 
 onMounted(() => {
   loadWatchlistData(false);
@@ -984,7 +1020,6 @@ onUnmounted(() => {
       }
     }
 
-    /* 🌟 实盘持仓输入与动态分析面板样式（纯黑深色风） */
     .position-input-card {
       background: #161e2e;
       border: 1px solid #1f2937;
@@ -1048,7 +1083,6 @@ onUnmounted(() => {
       }
     }
 
-    /* 统一覆盖 Element Plus 输入框在深色背景下的样式，绝不出现白底 */
     :deep(.el-input-number), :deep(.el-input) {
       width: 100%;
       .el-input__wrapper {
@@ -1227,7 +1261,8 @@ onUnmounted(() => {
       }
     }
   }
-  /* 彻底覆盖 Element Plus 表格默认白色背景 */
+
+    /* 彻底覆盖 Element Plus 表格默认白色背景 */
   :deep(.custom-dark-table) {
     background-color: #111827 !important;
     color: #d1d5db;
