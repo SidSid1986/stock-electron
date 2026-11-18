@@ -15,14 +15,8 @@
       <div class="header-actions">
         <!-- 🌟 新增：快捷点对点代码查询输入框 -->
         <div class="header-search-box">
-          <el-input
-            v-model="quickQuerySymbol"
-            placeholder="输入代码秒查买卖点，如: 600519"
-            size="default"
-            clearable
-            style="width: 230px;"
-            @keyup.enter="handleQuickDiagnose"
-          >
+          <el-input v-model="quickQuerySymbol" placeholder="输入代码秒查买卖点，如: 600519" size="default" clearable
+            style="width: 230px" @keyup.enter="handleQuickDiagnose">
             <template #append>
               <el-button :icon="Search" @click="handleQuickDiagnose" :loading="quickDiagnosing" />
             </template>
@@ -36,12 +30,8 @@
 
         <div class="monitor-switch">
           <span class="switch-label">盯盘轮询:</span>
-          <el-switch
-            v-model="isMonitoring"
-            active-color="#10b981"
-            inactive-color="#374151"
-            @change="handleMonitorToggle"
-          />
+          <el-switch v-model="isMonitoring" active-color="#10b981" inactive-color="#374151"
+            @change="handleMonitorToggle" />
         </div>
 
         <el-button type="info" plain :icon="Refresh" @click="loadWatchlistData" :loading="loading">
@@ -52,7 +42,6 @@
 
     <!-- 主体双栏联动区 -->
     <div class="terminal-grid">
-      
       <!-- 左侧：盯盘监控池 -->
       <div class="panel left-panel">
         <div class="panel-header">
@@ -66,17 +55,9 @@
         </div>
 
         <div class="table-wrapper">
-          <el-table 
-            ref="watchlistTableRef"
-            :data="watchlist" 
-            highlight-current-row
-            row-key="symbol"
-            @row-click="handleSelectStock"
-            style="width: 100%" 
-            v-loading="loading"
-            height="100%"
-            class="custom-dark-table"
-          >
+          <el-table ref="watchlistTableRef" :data="watchlist" highlight-current-row row-key="symbol"
+            @row-click="handleSelectStock" style="width: 100%" v-loading="loading" height="100%"
+            class="custom-dark-table">
             <el-table-column label="状态" width="60" align="center">
               <template #default="{ row }">
                 <span v-if="currentStock?.symbol === row.symbol" class="active-eye" title="当前盯盘焦点">👁️</span>
@@ -86,18 +67,24 @@
             <el-table-column prop="symbol" label="代码" width="85" align="center" />
             <el-table-column prop="name" label="名称" width="100" align="center">
               <template #default="{ row }">
-                <span :class="{ 'focused-name': currentStock?.symbol === row.symbol }">{{ row.name }}</span>
+                <span :class="{
+                  'focused-name': currentStock?.symbol === row.symbol,
+                }">{{ row.name }}</span>
               </template>
             </el-table-column>
             <el-table-column label="最新价" width="90" align="center">
               <template #default="{ row }">
-                <span class="price-num">¥{{ row.current_price || '--' }}</span>
+                <span class="price-num">¥{{ row.current_price || "--" }}</span>
               </template>
             </el-table-column>
             <el-table-column label="涨跌幅" width="85" align="center">
               <template #default="{ row }">
-                <span :class="['change-badge', (row.change_percent || 0) >= 0 ? 'up' : 'down']">
-                  {{ (row.change_percent || 0) >= 0 ? '+' : '' }}{{ row.change_percent || 0 }}%
+                <span :class="[
+                  'change-badge',
+                  (row.change_percent || 0) >= 0 ? 'up' : 'down',
+                ]">
+                  {{ (row.change_percent || 0) >= 0 ? "+" : ""
+                  }}{{ row.change_percent || 0 }}%
                 </span>
               </template>
             </el-table-column>
@@ -124,14 +111,8 @@
               当前锁定：{{ currentStock.name }} ({{ currentStock.symbol }})
             </span>
           </div>
-          <el-button 
-            v-if="currentStock" 
-            size="small" 
-            type="success" 
-            plain 
-            @click="fetchAiDiagnose(currentStock)"
-            :loading="diagnosing"
-          >
+          <el-button v-if="currentStock" size="small" type="success" plain @click="fetchAiDiagnose(currentStock)"
+            :loading="diagnosing">
             重新演算买卖点
           </el-button>
         </div>
@@ -141,19 +122,23 @@
           <div class="metric-cards-grid">
             <div class="metric-card">
               <span class="label">实时盘口最新价</span>
-              <span class="value">¥{{ currentStock.current_price || aiReport?.current_price || '--' }}</span>
+              <span class="value">¥{{
+                currentStock.current_price || aiReport?.current_price || "--"
+              }}</span>
             </div>
             <div class="metric-card highlight-buy">
               <span class="label">💡 AI 黄金低吸埋伏区</span>
-              <span class="value green">{{ aiReport?.suggested_buy_zone || '演算中...' }}</span>
+              <span class="value green">{{
+                aiReport?.suggested_buy_zone || "演算中..."
+              }}</span>
             </div>
             <div class="metric-card">
               <span class="label">🎯 波段目标止盈价</span>
-              <span class="value red">¥{{ aiReport?.target_price || '--' }}</span>
+              <span class="value red">¥{{ aiReport?.target_price || "--" }}</span>
             </div>
             <div class="metric-card">
               <span class="label">🛑 严格风控止损价</span>
-              <span class="value gray">¥{{ aiReport?.stop_loss_price || '--' }}</span>
+              <span class="value gray">¥{{ aiReport?.stop_loss_price || "--" }}</span>
             </div>
           </div>
 
@@ -163,38 +148,28 @@
               <span>💼 我的实盘持仓记录与动态盈亏分析</span>
               <span class="save-tip" v-if="positionSaved">已自动保存至本地</span>
             </div>
-            
+
             <div class="pos-form-grid">
               <div class="input-group">
                 <label>买入均价 (¥)</label>
-                <el-input-number 
-                  v-model="myPosition.costPrice" 
-                  :precision="2" 
-                  :step="0.1" 
-                  :min="0" 
-                  :controls="false"
-                  placeholder="例如: 13.00"
-                  size="small"
-                  @change="savePositionData"
-                />
+                <el-input-number v-model="myPosition.costPrice" :precision="2" :step="0.1" :min="0" :controls="false"
+                  placeholder="例如: 13.00" size="small" @change="savePositionData" />
               </div>
               <div class="input-group">
                 <label>买入股数 (股)</label>
-                <el-input-number 
-                  v-model="myPosition.shares" 
-                  :precision="0" 
-                  :step="100" 
-                  :min="0" 
-                  :controls="false"
-                  placeholder="例如: 1000"
-                  size="small"
-                  @change="savePositionData"
-                />
+                <el-input-number v-model="myPosition.shares" :precision="0" :step="100" :min="0" :controls="false"
+                  placeholder="例如: 1000" size="small" @change="savePositionData" />
               </div>
               <div class="result-group">
                 <span class="sub-label">浮动盈亏</span>
-                <span :class="['pnl-value', positionAnalysis.pnl >= 0 ? 'red' : 'green-pnl']">
-                  {{ positionAnalysis.pnl >= 0 ? '+' : '' }}¥{{ positionAnalysis.pnl }} ({{ positionAnalysis.pnlPercent }}%)
+                <span :class="[
+                  'pnl-value',
+                  positionAnalysis.pnl >= 0 ? 'red' : 'green-pnl',
+                ]">
+                  {{ positionAnalysis.pnl >= 0 ? "+" : "" }}¥{{
+                    positionAnalysis.pnl
+                  }}
+                  ({{ positionAnalysis.pnlPercent }}%)
                 </span>
               </div>
             </div>
@@ -217,7 +192,12 @@
           <!-- 投研与多因子综合诊断理由 -->
           <div class="quick-summary-box">
             <h4>📖 低吸策略与基本面复盘逻辑</h4>
-            <p>{{ aiReport?.analysis_reason || '正在结合最新财务指标与历史 K 线波动率生成裁决建议...' }}</p>
+            <p>
+              {{
+                aiReport?.analysis_reason ||
+                "正在结合最新财务指标与历史 K 线波动率生成裁决建议..."
+              }}
+            </p>
           </div>
 
           <!-- 底部打开 KLineChart 按钮 -->
@@ -232,7 +212,6 @@
           <el-empty description="监控池为空，请点击下方「一键扫描低吸标的」或手动添加股票" />
         </div>
       </div>
-
     </div>
 
     <!-- 底部：带价格范围过滤的精选 Top 5 扫描结果池 -->
@@ -246,41 +225,28 @@
         <!-- 价格范围过滤控制区 -->
         <div class="screener-controls">
           <span class="filter-label">价格范围 (¥)：</span>
-          <el-input-number
-            v-model="priceFilter.min"
-            :min="0"
-            :max="10000"
-            :precision="1"
-            :controls="false"
-            placeholder="最低价"
-            size="small"
-            style="width: 85px;"
-          />
+          <el-input-number v-model="priceFilter.min" :min="0" :max="10000" :precision="1" :controls="false"
+            placeholder="最低价" size="small" style="width: 85px" />
           <span class="range-sep">~</span>
-          <el-input-number
-            v-model="priceFilter.max"
-            :min="0"
-            :max="10000"
-            :precision="1"
-            :controls="false"
-            placeholder="最高价"
-            size="small"
-            style="width: 85px;"
-          />
+          <el-input-number v-model="priceFilter.max" :min="0" :max="10000" :precision="1" :controls="false"
+            placeholder="最高价" size="small" style="width: 85px" />
           <el-button type="warning" size="small" :icon="MagicStick" @click="handleScanTop5" :loading="scanning">
             ✨ 扫描低吸埋伏标的
           </el-button>
         </div>
       </div>
 
-      <el-table :data="top5Stocks" style="width: 100%; margin-top: 10px;" height="185px" class="custom-dark-table" v-loading="scanning">
+      <el-table :data="top5Stocks" style="width: 100%; margin-top: 10px" height="15vh" class="custom-dark-table"
+        v-loading="scanning">
         <el-table-column type="index" label="排名" width="65" align="center" />
         <el-table-column prop="symbol" label="代码" width="95" align="center" />
         <el-table-column prop="name" label="股票名称" width="115" align="center" />
         <el-table-column label="买入时机评级" width="140" align="center">
           <template #default="{ row }">
             <el-tag :type="row.action_tag === 'BUY' ? 'success' : 'warning'" effect="dark" size="small">
-              {{ row.action_tag === 'BUY' ? '🟢 触发黄金低吸' : '🟡 挂单等待回踩' }}
+              {{
+                row.action_tag === "BUY" ? "🟢 触发黄金低吸" : "🟡 挂单等待回踩"
+              }}
             </el-tag>
           </template>
         </el-table-column>
@@ -299,21 +265,17 @@
     </div>
 
     <!-- 🌟 弹窗：KLineChart 专业金融 K 线图 + AI 深度诊断 -->
-    <el-dialog 
-      v-model="detailModalVisible" 
-      :title="modalStock ? `${modalStock.name} (${modalStock.symbol}) - KLineChart 专业盘口与多维诊断` : '股票深度诊断'" 
-      width="1050px" 
-      top="4vh"
-      destroy-on-close
-      @opened="onDialogOpened"
-      @closed="destroyKLineChart"
-      class="pro-dialog"
-    >
+    <el-dialog v-model="detailModalVisible" :title="modalStock
+        ? `${modalStock.name} (${modalStock.symbol}) - KLineChart 专业盘口与多维诊断`
+        : '股票深度诊断'
+      " width="1050px" top="4vh" destroy-on-close @opened="onDialogOpened" @closed="destroyKLineChart"
+      class="pro-dialog">
       <div class="modal-body-content" v-loading="modalLoading">
         <div class="kline-section">
           <div class="chart-toolbar">
             <div class="chart-title">
-              <span>📈 KLineChart 专业看盘引擎 (鼠标滚轮缩放 / 按住左键拖拽 / 十字光标查价)</span>
+              <span>📈 KLineChart 专业看盘引擎 (鼠标滚轮缩放 / 按住左键拖拽 /
+                十字光标查价)</span>
             </div>
             <div class="indicator-btns">
               <span class="ind-label">副图指标：</span>
@@ -340,21 +302,28 @@
           <div class="point-grid">
             <div class="point-item">
               <span>黄金买入区间</span>
-              <strong class="green">{{ aiReport?.suggested_buy_zone || '计算中...' }}</strong>
+              <strong class="green">{{
+                aiReport?.suggested_buy_zone || "计算中..."
+              }}</strong>
             </div>
             <div class="point-item">
               <span>目标止盈价</span>
-              <strong class="red">¥{{ aiReport?.target_price || '--' }}</strong>
+              <strong class="red">¥{{ aiReport?.target_price || "--" }}</strong>
             </div>
             <div class="point-item">
               <span>风控止损价</span>
-              <strong class="gray">¥{{ aiReport?.stop_loss_price || '--' }}</strong>
+              <strong class="gray">¥{{ aiReport?.stop_loss_price || "--" }}</strong>
             </div>
           </div>
 
           <div class="reason-block">
             <h5>📖 多因子基本面与盘口综合复盘理由：</h5>
-            <p>{{ aiReport?.analysis_reason || '正在结合历史行情与财务指标进行实时推演...' }}</p>
+            <p>
+              {{
+                aiReport?.analysis_reason ||
+                "正在结合历史行情与财务指标进行实时推演..."
+              }}
+            </p>
           </div>
         </div>
       </div>
@@ -379,24 +348,29 @@
         <el-button type="primary" @click="submitManualAdd">确认添加并盯盘</el-button>
       </template>
     </el-dialog>
-
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted, onUnmounted, nextTick } from 'vue';
-import { ElMessage } from 'element-plus';
-import { Refresh, TrendCharts, MagicStick, Plus, Search } from '@element-plus/icons-vue';
-import { init, dispose } from 'klinecharts';
-import { 
-  getWatchlist, 
-  diagnoseStock, 
-  getRealtimeQuote, 
-  runStrategyScreen, 
-  addToWatchlist, 
+import { ref, reactive, computed, onMounted, onUnmounted, nextTick } from "vue";
+import { ElMessage } from "element-plus";
+import {
+  Refresh,
+  TrendCharts,
+  MagicStick,
+  Plus,
+  Search,
+} from "@element-plus/icons-vue";
+import { init, dispose } from "klinecharts";
+import {
+  getWatchlist,
+  diagnoseStock,
+  getRealtimeQuote,
+  runStrategyScreen,
+  addToWatchlist,
   removeFromWatchlist,
-  getStockHistory
-} from '@/api/stock.js';
+  getStockHistory,
+} from "@/api/stock.js";
 
 const loading = ref(false);
 const diagnosing = ref(false);
@@ -405,7 +379,7 @@ const scanning = ref(false);
 const isMonitoring = ref(false);
 
 // 🌟 新增：快捷点对点搜索状态
-const quickQuerySymbol = ref('');
+const quickQuerySymbol = ref("");
 const quickDiagnosing = ref(false);
 
 const watchlistTableRef = ref(null);
@@ -415,12 +389,12 @@ const currentStock = ref(null);
 const aiReport = ref(null);
 
 const addDialogVisible = ref(false);
-const newStockForm = ref({ symbol: '', name: '' });
+const newStockForm = ref({ symbol: "", name: "" });
 
 const positionSaved = ref(false);
 const myPosition = reactive({
   costPrice: 0,
-  shares: 0
+  shares: 0,
 });
 
 const loadPositionData = (symbol) => {
@@ -431,7 +405,7 @@ const loadPositionData = (symbol) => {
       myPosition.costPrice = data.costPrice || 0;
       myPosition.shares = data.shares || 0;
       return;
-    } catch (e) {}
+    } catch (e) { }
   }
   myPosition.costPrice = 0;
   myPosition.shares = 0;
@@ -440,29 +414,41 @@ const loadPositionData = (symbol) => {
 const savePositionData = () => {
   if (!currentStock.value) return;
   const symbol = currentStock.value.symbol;
-  localStorage.setItem(`quant_pos_${symbol}`, JSON.stringify({
-    costPrice: myPosition.costPrice,
-    shares: myPosition.shares
-  }));
+  localStorage.setItem(
+    `quant_pos_${symbol}`,
+    JSON.stringify({
+      costPrice: myPosition.costPrice,
+      shares: myPosition.shares,
+    }),
+  );
   positionSaved.value = true;
-  setTimeout(() => { positionSaved.value = false; }, 2000);
+  setTimeout(() => {
+    positionSaved.value = false;
+  }, 2000);
 };
 
 const positionAnalysis = computed(() => {
-  const currentPrice = Number(currentStock.value?.current_price || aiReport.value?.current_price || 0);
+  const currentPrice = Number(
+    currentStock.value?.current_price || aiReport.value?.current_price || 0,
+  );
   const cost = Number(myPosition.costPrice || 0);
   const shares = Number(myPosition.shares || 0);
   const targetPrice = Number(aiReport.value?.target_price || 0);
   const stopLossPrice = Number(aiReport.value?.stop_loss_price || 0);
 
   if (cost <= 0 || shares <= 0 || currentPrice <= 0) {
-    return { pnl: '0.00', pnlPercent: '0.00', advice: '请在上方完整录入您的【买入均价】与【买入股数】，AI 将为您量身定制持仓风控方案。' };
+    return {
+      pnl: "0.00",
+      pnlPercent: "0.00",
+      advice:
+        "请在上方完整录入您的【买入均价】与【买入股数】，AI 将为您量身定制持仓风控方案。",
+    };
   }
 
   const pnl = ((currentPrice - cost) * shares).toFixed(2);
   const pnlPercent = (((currentPrice - cost) / cost) * 100).toFixed(2);
 
-  let advice = '';
+  let advice = "";
   if (stopLossPrice > 0 && currentPrice <= stopLossPrice) {
     advice = `🚨【严重风控预警】：当前价（¥${currentPrice}）已跌破严格风控止损价（¥${stopLossPrice}），建议果断减仓或清仓止损，切忌扛单！`;
   } else if (targetPrice > 0 && currentPrice >= targetPrice) {
@@ -480,13 +466,13 @@ const positionAnalysis = computed(() => {
 
 const priceFilter = ref({
   min: null,
-  max: null
+  max: null,
 });
 
 const detailModalVisible = ref(false);
 const modalStock = ref(null);
 const klineContainer = ref(null);
-const subIndicator = ref('VOL');
+const subIndicator = ref("VOL");
 let chartInstance = null;
 let subPaneId = null;
 
@@ -495,7 +481,9 @@ let alertTimer = null;
 const withTimeout = (promise, ms = 4000) => {
   return Promise.race([
     promise,
-    new Promise((_, reject) => setTimeout(() => reject(new Error('请求超时')), ms))
+    new Promise((_, reject) =>
+      setTimeout(() => reject(new Error("请求超时")), ms),
+    ),
   ]);
 };
 
@@ -509,7 +497,12 @@ const loadWatchlistData = async (keepCurrent = false) => {
   } catch (e) {
     if (watchlist.value.length === 0) {
       watchlist.value = [
-        { symbol: '002202', name: '金风科技', current_price: 13.54, change_percent: -1.31 }
+        {
+          symbol: "002202",
+          name: "金风科技",
+          current_price: 13.54,
+          change_percent: -1.31,
+        },
       ];
     }
   } finally {
@@ -520,7 +513,9 @@ const loadWatchlistData = async (keepCurrent = false) => {
     if (!keepCurrent || !currentStock.value) {
       await handleSelectStock(watchlist.value[0]);
     } else {
-      const found = watchlist.value.find(item => item.symbol === currentStock.value.symbol);
+      const found = watchlist.value.find(
+        (item) => item.symbol === currentStock.value.symbol,
+      );
       await handleSelectStock(found || watchlist.value[0]);
     }
   } else {
@@ -535,14 +530,14 @@ const loadWatchlistData = async (keepCurrent = false) => {
         item.current_price = qRes.data.latest_price;
         item.change_percent = qRes.data.change_percent;
       }
-    } catch (e) {}
+    } catch (e) { }
   });
 };
 
 const handleSelectStock = async (row) => {
   if (!row) return;
   currentStock.value = row;
-  
+
   loadPositionData(row.symbol);
 
   await nextTick();
@@ -568,11 +563,11 @@ const fetchAiDiagnose = async (stock) => {
     aiReport.value = {
       symbol: stock.symbol,
       current_price: p,
-      action_signal: stock.action_tag || 'HOLD',
+      action_signal: stock.action_tag || "HOLD",
       suggested_buy_zone: `${(p * 0.93).toFixed(2)} - ${(p * 0.97).toFixed(2)}`,
       target_price: (p * 1.15).toFixed(2),
-      stop_loss_price: (p * 0.90).toFixed(2),
-      analysis_reason: `【${stock.name}】核心财务指标稳健，当前处于回调蓄势阶段。建议在下方黄金低吸区间（¥${(p*0.93).toFixed(2)}附近）挂单埋伏，切勿盲目追高。`
+      stop_loss_price: (p * 0.9).toFixed(2),
+      analysis_reason: `【${stock.name}】核心财务指标稳健，当前处于回调蓄势阶段。建议在下方黄金低吸区间（¥${(p * 0.93).toFixed(2)}附近）挂单埋伏，切勿盲目追高。`,
     };
   } finally {
     diagnosing.value = false;
@@ -583,7 +578,7 @@ const fetchAiDiagnose = async (stock) => {
 const handleQuickDiagnose = async () => {
   const symbol = quickQuerySymbol.value.trim();
   if (!symbol) {
-    ElMessage.warning('请输入要诊断的股票代码');
+    ElMessage.warning("请输入要诊断的股票代码");
     return;
   }
 
@@ -592,19 +587,19 @@ const handleQuickDiagnose = async () => {
     const res = await withTimeout(diagnoseStock(symbol), 5000);
     if (res && res.code === 200 && res.data) {
       const info = res.data;
-      modalStock.value = { 
-        symbol: info.symbol, 
-        name: info.name || symbol, 
-        current_price: info.current_price 
+      modalStock.value = {
+        symbol: info.symbol,
+        name: info.name || symbol,
+        current_price: info.current_price,
       };
       aiReport.value = info;
       detailModalVisible.value = true;
       ElMessage.success(`标的 ${symbol} 诊断完成！`);
     } else {
-      ElMessage.error(res?.message || '未找到该股票或诊断失败');
+      ElMessage.error(res?.message || "未找到该股票或诊断失败");
     }
   } catch (e) {
-    ElMessage.error('诊断请求超时或后端异常');
+    ElMessage.error("诊断请求超时或后端异常");
   } finally {
     quickDiagnosing.value = false;
   }
@@ -616,7 +611,7 @@ const handleScanTop5 = async () => {
     priceFilter.value.max !== null &&
     priceFilter.value.min > priceFilter.value.max
   ) {
-    ElMessage.warning('最低价不能高于最高价，请重新调整价格范围');
+    ElMessage.warning("最低价不能高于最高价，请重新调整价格范围");
     return;
   }
 
@@ -624,36 +619,85 @@ const handleScanTop5 = async () => {
   try {
     const queryParams = {
       min_roe: 10.0,
-      max_debt: 70.0
+      max_debt: 70.0,
     };
-    if (priceFilter.value.min !== null) queryParams.min_price = priceFilter.value.min;
-    if (priceFilter.value.max !== null) queryParams.max_price = priceFilter.value.max;
+    if (priceFilter.value.min !== null)
+      queryParams.min_price = priceFilter.value.min;
+    if (priceFilter.value.max !== null)
+      queryParams.max_price = priceFilter.value.max;
 
     const res = await withTimeout(runStrategyScreen(queryParams), 6000);
     if (res && res.code === 200 && res.data && res.data.length > 0) {
       top5Stocks.value = res.data.slice(0, 5);
-      ElMessage.success(`扫描完成！已为您精选出 ${top5Stocks.value.length} 只低吸埋伏标的`);
+      ElMessage.success(
+        `扫描完成！已为您精选出 ${top5Stocks.value.length} 只低吸埋伏标的`,
+      );
     } else {
-      throw new Error('空数据');
+      throw new Error("空数据");
     }
   } catch (e) {
     const fallbackPool = [
-      { symbol: '600519', name: '贵州茅台', latest_roe: 32.4, current_price: 1750.00, action_tag: 'HOLD', buy_zone: '1620.00 - 1680.00' },
-      { symbol: '002594', name: '比亚迪', latest_roe: 19.5, current_price: 265.00, action_tag: 'BUY', buy_zone: '245.00 - 255.00' },
-      { symbol: '000858', name: '五粮液', latest_roe: 21.8, current_price: 148.50, action_tag: 'HOLD', buy_zone: '138.00 - 143.00' },
-      { symbol: '600036', name: '招商银行', latest_roe: 16.2, current_price: 36.80, action_tag: 'BUY', buy_zone: '34.20 - 35.50' },
-      { symbol: '002202', name: '金风科技', latest_roe: 13.5, current_price: 13.54, action_tag: 'BUY', buy_zone: '12.59 - 13.13' }
+      {
+        symbol: "600519",
+        name: "贵州茅台",
+        latest_roe: 32.4,
+        current_price: 1750.0,
+        action_tag: "HOLD",
+        buy_zone: "1620.00 - 1680.00",
+      },
+      {
+        symbol: "002594",
+        name: "比亚迪",
+        latest_roe: 19.5,
+        current_price: 265.0,
+        action_tag: "BUY",
+        buy_zone: "245.00 - 255.00",
+      },
+      {
+        symbol: "000858",
+        name: "五粮液",
+        latest_roe: 21.8,
+        current_price: 148.5,
+        action_tag: "HOLD",
+        buy_zone: "138.00 - 143.00",
+      },
+      {
+        symbol: "600036",
+        name: "招商银行",
+        latest_roe: 16.2,
+        current_price: 36.8,
+        action_tag: "BUY",
+        buy_zone: "34.20 - 35.50",
+      },
+      {
+        symbol: "002202",
+        name: "金风科技",
+        latest_roe: 13.5,
+        current_price: 13.54,
+        action_tag: "BUY",
+        buy_zone: "12.59 - 13.13",
+      },
     ];
 
     top5Stocks.value = fallbackPool
-      .filter(item => {
-        if (priceFilter.value.min !== null && item.current_price < priceFilter.value.min) return false;
-        if (priceFilter.value.max !== null && item.current_price > priceFilter.value.max) return false;
+      .filter((item) => {
+        if (
+          priceFilter.value.min !== null &&
+          item.current_price < priceFilter.value.min
+        )
+          return false;
+        if (
+          priceFilter.value.max !== null &&
+          item.current_price > priceFilter.value.max
+        )
+          return false;
         return true;
       })
       .slice(0, 5);
 
-    ElMessage.success(`已筛选出 ${top5Stocks.value.length} 只等待回踩的低吸埋伏标的`);
+    ElMessage.success(
+      `已筛选出 ${top5Stocks.value.length} 只等待回踩的低吸埋伏标的`,
+    );
   } finally {
     scanning.value = false;
   }
@@ -665,12 +709,12 @@ const handleAddFromTop5 = async (row) => {
 
 const submitManualAdd = async () => {
   if (!newStockForm.value.symbol || !newStockForm.value.name) {
-    ElMessage.warning('请输入完整的股票代码和名称');
+    ElMessage.warning("请输入完整的股票代码和名称");
     return;
   }
   const { symbol, name } = newStockForm.value;
   addDialogVisible.value = false;
-  newStockForm.value = { symbol: '', name: '' };
+  newStockForm.value = { symbol: "", name: "" };
   await addStockAndFocus(symbol, name);
 };
 
@@ -681,12 +725,17 @@ const addStockAndFocus = async (symbol, name) => {
       ElMessage.success(`已将 ${name}(${symbol}) 加入盯盘池并切换为当前焦点`);
     }
   } catch (e) {
-    if (!watchlist.value.some(i => i.symbol === symbol)) {
-      watchlist.value.unshift({ symbol, name, current_price: 13.54, change_percent: 0 });
+    if (!watchlist.value.some((i) => i.symbol === symbol)) {
+      watchlist.value.unshift({
+        symbol,
+        name,
+        current_price: 13.54,
+        change_percent: 0,
+      });
     }
   }
   await loadWatchlistData(true);
-  const target = watchlist.value.find(i => i.symbol === symbol);
+  const target = watchlist.value.find((i) => i.symbol === symbol);
   if (target) {
     await handleSelectStock(target);
   }
@@ -695,9 +744,9 @@ const addStockAndFocus = async (symbol, name) => {
 const handleRemoveWatchlist = async (symbol) => {
   try {
     await removeFromWatchlist(symbol);
-  } catch (e) {}
-  watchlist.value = watchlist.value.filter(i => i.symbol !== symbol);
-  ElMessage.success('已移出盯盘池');
+  } catch (e) { }
+  watchlist.value = watchlist.value.filter((i) => i.symbol !== symbol);
+  ElMessage.success("已移出盯盘池");
   if (currentStock.value?.symbol === symbol) {
     currentStock.value = null;
     if (watchlist.value.length > 0) {
@@ -722,7 +771,7 @@ const onDialogOpened = () => {
 
 const renderKLineChart = async () => {
   await nextTick();
-  const container = document.getElementById('kline-main-chart');
+  const container = document.getElementById("kline-main-chart");
   if (!container) return;
 
   if (container.clientWidth === 0) {
@@ -739,48 +788,64 @@ const renderKLineChart = async () => {
     styles: {
       grid: {
         show: true,
-        horizontal: { show: true, size: 1, color: '#1f2937', style: 'dashed' },
-        vertical: { show: true, size: 1, color: '#1f2937', style: 'dashed' }
+        horizontal: { show: true, size: 1, color: "#1f2937", style: "dashed" },
+        vertical: { show: true, size: 1, color: "#1f2937", style: "dashed" },
       },
       candle: {
-        type: 'candle_solid',
+        type: "candle_solid",
         bar: {
-          upColor: '#ef4444',
-          downColor: '#10b981',
-          noChangeColor: '#888888',
-          upBorderColor: '#ef4444',
-          downBorderColor: '#10b981',
-          upWickColor: '#ef4444',
-          downWickColor: '#10b981'
-        }
+          upColor: "#ef4444",
+          downColor: "#10b981",
+          noChangeColor: "#888888",
+          upBorderColor: "#ef4444",
+          downBorderColor: "#10b981",
+          upWickColor: "#ef4444",
+          downWickColor: "#10b981",
+        },
       },
       indicator: {
         bars: [
-          { upColor: 'rgba(239, 68, 68, 0.75)', downColor: 'rgba(16, 185, 129, 0.75)', noChangeColor: '#888888' }
-        ]
+          {
+            upColor: "rgba(239, 68, 68, 0.75)",
+            downColor: "rgba(16, 185, 129, 0.75)",
+            noChangeColor: "#888888",
+          },
+        ],
       },
-      xAxis: { axisLine: { color: '#374151' }, tickText: { color: '#9ca3af' } },
-      yAxis: { axisLine: { color: '#374151' }, tickText: { color: '#9ca3af' } }
-    }
+      xAxis: { axisLine: { color: "#374151" }, tickText: { color: "#9ca3af" } },
+      yAxis: { axisLine: { color: "#374151" }, tickText: { color: "#9ca3af" } },
+    },
   });
 
-  chartInstance.createIndicator('MA', false, { id: 'candle_pane' });
-  subPaneId = chartInstance.createIndicator(subIndicator.value, false, { height: 95 });
+  chartInstance.createIndicator("MA", false, { id: "candle_pane" });
+  subPaneId = chartInstance.createIndicator(subIndicator.value, false, {
+    height: 95,
+  });
 
   let klineDataList = [];
   try {
-    const histRes = await withTimeout(getStockHistory(modalStock.value.symbol), 3000);
-    if (histRes && histRes.code === 200 && histRes.data && histRes.data.length > 0) {
-      klineDataList = histRes.data.map(item => ({
-        timestamp: new Date(item.trade_date).getTime(),
-        open: Number(item.open),
-        high: Number(item.high),
-        low: Number(item.low),
-        close: Number(item.close),
-        volume: Number(item.volume || 10000)
-      })).filter(d => !isNaN(d.timestamp) && d.open > 0);
+    const histRes = await withTimeout(
+      getStockHistory(modalStock.value.symbol),
+      3000,
+    );
+    if (
+      histRes &&
+      histRes.code === 200 &&
+      histRes.data &&
+      histRes.data.length > 0
+    ) {
+      klineDataList = histRes.data
+        .map((item) => ({
+          timestamp: new Date(item.trade_date).getTime(),
+          open: Number(item.open),
+          high: Number(item.high),
+          low: Number(item.low),
+          close: Number(item.close),
+          volume: Number(item.volume || 10000),
+        }))
+        .filter((d) => !isNaN(d.timestamp) && d.open > 0);
     }
-  } catch (e) {}
+  } catch (e) { }
 
   if (klineDataList.length === 0) {
     let basePrice = Number(modalStock.value?.current_price) || 13.54;
@@ -799,26 +864,26 @@ const renderKLineChart = async () => {
         high: parseFloat(high.toFixed(2)),
         low: parseFloat(low.toFixed(2)),
         close: parseFloat(close.toFixed(2)),
-        volume
+        volume,
       });
       basePrice = close;
     }
   }
 
-  if (typeof chartInstance.setDataLoader === 'function') {
+  if (typeof chartInstance.setDataLoader === "function") {
     chartInstance.setSymbol({
       ticker: modalStock.value.symbol,
       name: modalStock.value.name,
       pricePrecision: 2,
-      volumePrecision: 0
+      volumePrecision: 0,
     });
-    chartInstance.setPeriod({ span: 1, type: 'day' });
+    chartInstance.setPeriod({ span: 1, type: "day" });
     chartInstance.setDataLoader({
       getBars: ({ callback }) => {
         callback(klineDataList, false);
-      }
+      },
     });
-  } else if (typeof chartInstance.applyNewData === 'function') {
+  } else if (typeof chartInstance.applyNewData === "function") {
     chartInstance.applyNewData(klineDataList);
   }
 
@@ -832,7 +897,7 @@ const changeSubIndicator = (newInd) => {
 };
 
 const destroyKLineChart = () => {
-  const container = document.getElementById('kline-main-chart');
+  const container = document.getElementById("kline-main-chart");
   if (container && chartInstance) {
     dispose(container);
     chartInstance = null;
@@ -841,31 +906,57 @@ const destroyKLineChart = () => {
 
 const judgmentStatus = computed(() => {
   if (!aiReport.value) {
-    return { icon: '⏳', title: '正在评估当前标的', desc: '系统正在演算买卖区间与支撑阻力位...', type: 'info' };
+    return {
+      icon: "⏳",
+      title: "正在评估当前标的",
+      desc: "系统正在演算买卖区间与支撑阻力位...",
+      type: "info",
+    };
   }
   const sig = aiReport.value.action_signal;
-  if (sig === 'BUY') {
-    return { icon: '🟢', title: '【可直接买入】已落入黄金低吸区间', desc: '当前价格接近支撑位，基本面与技术面共振，具备高性价比。', type: 'success' };
-  } else if (sig === 'SELL') {
-    return { icon: '🔴', title: '【注意风险】短期涨幅过大偏离均线', desc: '不宜盲目追高，建议等待回调至下方支撑位再考虑。', type: 'danger' };
+  if (sig === "BUY") {
+    return {
+      icon: "🟢",
+      title: "【可直接买入】已落入黄金低吸区间",
+      desc: "当前价格接近支撑位，基本面与技术面共振，具备高性价比。",
+      type: "success",
+    };
+  } else if (sig === "SELL") {
+    return {
+      icon: "🔴",
+      title: "【注意风险】短期涨幅过大偏离均线",
+      desc: "不宜盲目追高，建议等待回调至下方支撑位再考虑。",
+      type: "danger",
+    };
   }
-  return { icon: '🟡', title: '【挂单观望】等待回踩埋伏点', desc: '当前处于震荡期，建议在 AI 建议的低吸区间挂单，耐心等待回踩。', type: 'warning' };
+  return {
+    icon: "🟡",
+    title: "【挂单观望】等待回踩埋伏点",
+    desc: "当前处于震荡期，建议在 AI 建议的低吸区间挂单，耐心等待回踩。",
+    type: "warning",
+  };
 });
 
 const handleMonitorToggle = (val) => {
   if (val) {
-    ElMessage.success('已开启自动盯盘轮询');
+    ElMessage.success("已开启自动盯盘轮询");
     alertTimer = setInterval(async () => {
       if (currentStock.value) await fetchAiDiagnose(currentStock.value);
     }, 30000);
   } else {
-    ElMessage.info('已暂停自动轮询');
+    ElMessage.info("已暂停自动轮询");
     if (alertTimer) clearInterval(alertTimer);
   }
 };
 
-const getSignalType = (sig) => (sig === 'BUY' ? 'success' : sig === 'SELL' ? 'danger' : 'warning');
-const formatSignal = (sig) => (sig === 'BUY' ? '🟢 黄金低吸 (BUY)' : sig === 'SELL' ? '🔴 逢高减仓 (SELL)' : '🟡 挂单埋伏 (HOLD)');
+const getSignalType = (sig) =>
+  sig === "BUY" ? "success" : sig === "SELL" ? "danger" : "warning";
+const formatSignal = (sig) =>
+  sig === "BUY"
+    ? "🟢 黄金低吸 (BUY)"
+    : sig === "SELL"
+      ? "🔴 逢高减仓 (SELL)"
+      : "🟡 挂单埋伏 (HOLD)";
 
 onMounted(() => {
   loadWatchlistData(false);
@@ -879,12 +970,14 @@ onUnmounted(() => {
 
 <style scoped lang="scss">
 .quant-terminal {
-  padding: 16px;
+  padding-top: 4vh 1vh 1vh 1vh;
+  // border: 5px solid green;
   background: #0b0f19;
   color: #f3f4f6;
-  min-height: 97vh;
+  height: 100vh;
   box-sizing: border-box;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 
   .terminal-header {
     display: flex;
@@ -895,11 +988,15 @@ onUnmounted(() => {
     border-radius: 12px;
     border: 1px solid #1f2937;
     margin-bottom: 16px;
+    margin-top: 4vh;
 
     .brand-section {
       display: flex;
       align-items: center;
       gap: 14px;
+    
+    
+
       .logo-badge {
         background: linear-gradient(135deg, #3b82f6, #1d4ed8);
         color: #fff;
@@ -908,9 +1005,20 @@ onUnmounted(() => {
         border-radius: 6px;
         font-size: 14px;
       }
+
       .title-group {
-        h1 { margin: 0; font-size: 18px; color: #fff; font-weight: 600; }
-        p { margin: 2px 0 0; font-size: 12px; color: #9ca3af; }
+        h1 {
+          margin: 0;
+          font-size: 18px;
+          color: #fff;
+          font-weight: 600;
+        }
+
+        p {
+          margin: 2px 0 0;
+          font-size: 12px;
+          color: #9ca3af;
+        }
       }
     }
 
@@ -918,6 +1026,7 @@ onUnmounted(() => {
       display: flex;
       align-items: center;
       gap: 12px;
+
       .monitor-switch {
         display: flex;
         align-items: center;
@@ -925,7 +1034,11 @@ onUnmounted(() => {
         background: #1f2937;
         padding: 5px 10px;
         border-radius: 6px;
-        .switch-label { font-size: 12px; color: #9ca3af; }
+
+        .switch-label {
+          font-size: 12px;
+          color: #9ca3af;
+        }
       }
     }
   }
@@ -933,7 +1046,6 @@ onUnmounted(() => {
   .terminal-grid {
     display: flex;
     gap: 16px;
-    height: calc(100vh - 345px);
 
     .panel {
       background: #111827;
@@ -950,12 +1062,24 @@ onUnmounted(() => {
         border-bottom: 1px solid #1f2937;
         padding-bottom: 12px;
         margin-bottom: 12px;
-        h3 { margin: 0; font-size: 16px; color: #fff; font-weight: 600; }
-        .sub-tip { font-size: 12px; color: #9ca3af; }
+
+        h3 {
+          margin: 0;
+          font-size: 16px;
+          color: #fff;
+          font-weight: 600;
+        }
+
+        .sub-tip {
+          font-size: 12px;
+          color: #9ca3af;
+        }
+
         .focus-title {
           display: flex;
           align-items: center;
           gap: 10px;
+
           .focus-badge {
             background: rgba(59, 130, 246, 0.15);
             color: #60a5fa;
@@ -969,24 +1093,63 @@ onUnmounted(() => {
       }
     }
 
-    .left-panel { 
-      flex: 45; 
-      .table-wrapper { flex: 1; overflow: hidden; }
+    .left-panel {
+      // border: 3px solid yellow;
+      height: 58.5vh;
+      flex: 45;
+
+      .table-wrapper {
+        flex: 1;
+        overflow: hidden;
+      }
     }
-    .right-panel { flex: 55; }
+
+    .right-panel {
+      // border: 3px solid red;
+      height: 58.5vh;
+      flex: 55;
+
+      .table-wrapper {
+        flex: 1;
+        overflow: hidden;
+      }
+    }
   }
 
-  .active-eye { font-size: 15px; }
-  .idle-dot { color: #4b5563; font-size: 16px; }
-  .focused-name { color: #60a5fa; font-weight: 700; }
-  .price-num { font-weight: 600; color: #fff; }
+  .active-eye {
+    font-size: 15px;
+  }
+
+  .idle-dot {
+    color: #4b5563;
+    font-size: 16px;
+  }
+
+  .focused-name {
+    color: #60a5fa;
+    font-weight: 700;
+  }
+
+  .price-num {
+    font-weight: 600;
+    color: #fff;
+  }
+
   .change-badge {
     padding: 2px 8px;
     border-radius: 4px;
     font-size: 12px;
     font-weight: bold;
-    &.up { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
-    &.down { background: rgba(16, 185, 129, 0.15); color: #10b981; }
+
+    &.up {
+      background: rgba(239, 68, 68, 0.15);
+      color: #ef4444;
+    }
+
+    &.down {
+      background: rgba(16, 185, 129, 0.15);
+      color: #10b981;
+    }
   }
 
   .quick-dashboard {
@@ -1010,13 +1173,33 @@ onUnmounted(() => {
         flex-direction: column;
         gap: 4px;
 
-        .label { font-size: 12px; color: #9ca3af; }
-        .value { font-size: 18px; font-weight: 700; color: #fff; 
-          &.green { color: #10b981; }
-          &.red { color: #ef4444; }
-          &.gray { color: #9ca3af; }
+        .label {
+          font-size: 12px;
+          color: #9ca3af;
         }
-        &.highlight-buy { border-color: rgba(16, 185, 129, 0.4); background: rgba(16, 185, 129, 0.05); }
+
+        .value {
+          font-size: 18px;
+          font-weight: 700;
+          color: #fff;
+
+          &.green {
+            color: #10b981;
+          }
+
+          &.red {
+            color: #ef4444;
+          }
+
+          &.gray {
+            color: #9ca3af;
+          }
+        }
+
+        &.highlight-buy {
+          border-color: rgba(16, 185, 129, 0.4);
+          background: rgba(16, 185, 129, 0.05);
+        }
       }
     }
 
@@ -1036,7 +1219,11 @@ onUnmounted(() => {
         font-size: 13px;
         color: #60a5fa;
         font-weight: 600;
-        .save-tip { font-size: 11px; color: #10b981; }
+
+        .save-tip {
+          font-size: 11px;
+          color: #10b981;
+        }
       }
 
       .pos-form-grid {
@@ -1049,7 +1236,11 @@ onUnmounted(() => {
           display: flex;
           flex-direction: column;
           gap: 4px;
-          label { font-size: 11px; color: #9ca3af; }
+
+          label {
+            font-size: 11px;
+            color: #9ca3af;
+          }
         }
 
         .result-group {
@@ -1060,12 +1251,23 @@ onUnmounted(() => {
           display: flex;
           flex-direction: column;
           gap: 2px;
-          .sub-label { font-size: 11px; color: #9ca3af; }
+
+          .sub-label {
+            font-size: 11px;
+            color: #9ca3af;
+          }
+
           .pnl-value {
             font-size: 14px;
             font-weight: 700;
-            &.red { color: #ef4444; }
-            &.green-pnl { color: #10b981; }
+
+            &.red {
+              color: #ef4444;
+            }
+
+            &.green-pnl {
+              color: #10b981;
+            }
           }
         }
       }
@@ -1078,19 +1280,33 @@ onUnmounted(() => {
         border: 1px solid rgba(59, 130, 246, 0.2);
         padding: 8px 12px;
         border-radius: 6px;
-        .advice-icon { font-size: 13px; }
-        .advice-text { font-size: 12px; color: #93c5fd; line-height: 1.4; }
+
+        .advice-icon {
+          font-size: 13px;
+        }
+
+        .advice-text {
+          font-size: 12px;
+          color: #93c5fd;
+          line-height: 1.4;
+        }
       }
     }
 
-    :deep(.el-input-number), :deep(.el-input) {
+    :deep(.el-input-number),
+    :deep(.el-input) {
       width: 100%;
+
       .el-input__wrapper {
         background-color: #0b0f19 !important;
         box-shadow: 0 0 0 1px #374151 inset !important;
-        &:hover, &:focus, &.is-focus {
+
+        &:hover,
+        &:focus,
+        &.is-focus {
           box-shadow: 0 0 0 1px #3b82f6 inset !important;
         }
+
         .el-input__inner {
           color: #f3f4f6 !important;
           background-color: transparent !important;
@@ -1106,16 +1322,47 @@ onUnmounted(() => {
       border-radius: 8px;
       border: 1px solid transparent;
 
-      .icon-wrap { font-size: 16px; }
-      .content {
-        h4 { margin: 0 0 2px 0; font-size: 13px; font-weight: 600; }
-        p { margin: 0; font-size: 11px; opacity: 0.9; }
+      .icon-wrap {
+        font-size: 16px;
       }
 
-      &.success { background: rgba(16, 185, 129, 0.1); border-color: rgba(16, 185, 129, 0.3); color: #34d399; }
-      &.danger { background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.3); color: #f87171; }
-      &.warning { background: rgba(245, 158, 11, 0.1); border-color: rgba(245, 158, 11, 0.3); color: #fbbf24; }
-      &.info { background: rgba(59, 130, 246, 0.1); border-color: rgba(59, 130, 246, 0.3); color: #60a5fa; }
+      .content {
+        h4 {
+          margin: 0 0 2px 0;
+          font-size: 13px;
+          font-weight: 600;
+        }
+
+        p {
+          margin: 0;
+          font-size: 11px;
+          opacity: 0.9;
+        }
+      }
+
+      &.success {
+        background: rgba(16, 185, 129, 0.1);
+        border-color: rgba(16, 185, 129, 0.3);
+        color: #34d399;
+      }
+
+      &.danger {
+        background: rgba(239, 68, 68, 0.1);
+        border-color: rgba(239, 68, 68, 0.3);
+        color: #f87171;
+      }
+
+      &.warning {
+        background: rgba(245, 158, 11, 0.1);
+        border-color: rgba(245, 158, 11, 0.3);
+        color: #fbbf24;
+      }
+
+      &.info {
+        background: rgba(59, 130, 246, 0.1);
+        border-color: rgba(59, 130, 246, 0.3);
+        color: #60a5fa;
+      }
     }
 
     .quick-summary-box {
@@ -1123,8 +1370,19 @@ onUnmounted(() => {
       border: 1px solid #1f2937;
       border-radius: 8px;
       padding: 10px 14px;
-      h4 { margin: 0 0 4px 0; font-size: 12px; color: #60a5fa; }
-      p { margin: 0; font-size: 12px; line-height: 1.5; color: #d1d5db; }
+
+      h4 {
+        margin: 0 0 4px 0;
+        font-size: 12px;
+        color: #60a5fa;
+      }
+
+      p {
+        margin: 0;
+        font-size: 12px;
+        line-height: 1.5;
+        color: #d1d5db;
+      }
     }
 
     .action-footer-bar {
@@ -1142,20 +1400,34 @@ onUnmounted(() => {
   }
 
   .bottom-screener-panel {
-    margin-top: 16px;
+    margin-top: 1vh;
     background: #111827;
     border: 1px solid #1f2937;
     border-radius: 12px;
     padding: 14px 20px;
 
+    // border: 5px solid blue;
+    height: 20vh;
+
     .screener-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
+
       .title {
-        h3 { margin: 0; font-size: 15px; color: #fff; font-weight: 600; }
-        span { font-size: 12px; color: #9ca3af; }
+        h3 {
+          margin: 0;
+          font-size: 15px;
+          color: #fff;
+          font-weight: 600;
+        }
+
+        span {
+          font-size: 12px;
+          color: #9ca3af;
+        }
       }
+
       .screener-controls {
         display: flex;
         align-items: center;
@@ -1170,13 +1442,16 @@ onUnmounted(() => {
           color: #d1d5db;
           font-weight: 500;
         }
+
         .range-sep {
           color: #6b7280;
           font-weight: bold;
         }
+
         :deep(.el-input__wrapper) {
           background-color: #0b0f19 !important;
           box-shadow: 0 0 0 1px #374151 inset !important;
+
           .el-input__inner {
             color: #f3f4f6 !important;
             text-align: center;
@@ -1202,12 +1477,22 @@ onUnmounted(() => {
         justify-content: space-between;
         align-items: center;
         margin-bottom: 10px;
-        .chart-title { font-size: 13px; color: #94a3b8; font-weight: 600; }
+
+        .chart-title {
+          font-size: 13px;
+          color: #94a3b8;
+          font-weight: 600;
+        }
+
         .indicator-btns {
           display: flex;
           align-items: center;
           gap: 8px;
-          .ind-label { font-size: 12px; color: #9ca3af; }
+
+          .ind-label {
+            font-size: 12px;
+            color: #9ca3af;
+          }
         }
       }
 
@@ -1231,7 +1516,12 @@ onUnmounted(() => {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        h4 { margin: 0; font-size: 15px; color: #fff; }
+
+        h4 {
+          margin: 0;
+          font-size: 15px;
+          color: #fff;
+        }
       }
 
       .point-grid {
@@ -1246,23 +1536,48 @@ onUnmounted(() => {
           display: flex;
           flex-direction: column;
           gap: 4px;
-          span { font-size: 12px; color: #9ca3af; }
-          strong { font-size: 16px; 
-            &.green { color: #10b981; }
-            &.red { color: #ef4444; }
-            &.gray { color: #e5e7eb; }
+
+          span {
+            font-size: 12px;
+            color: #9ca3af;
+          }
+
+          strong {
+            font-size: 16px;
+
+            &.green {
+              color: #10b981;
+            }
+
+            &.red {
+              color: #ef4444;
+            }
+
+            &.gray {
+              color: #e5e7eb;
+            }
           }
         }
       }
 
       .reason-block {
-        h5 { margin: 0 0 4px 0; font-size: 13px; color: #60a5fa; }
-        p { margin: 0; font-size: 13px; line-height: 1.6; color: #d1d5db; }
+        h5 {
+          margin: 0 0 4px 0;
+          font-size: 13px;
+          color: #60a5fa;
+        }
+
+        p {
+          margin: 0;
+          font-size: 13px;
+          line-height: 1.6;
+          color: #d1d5db;
+        }
       }
     }
   }
 
-    /* 彻底覆盖 Element Plus 表格默认白色背景 */
+  /* 彻底覆盖 Element Plus 表格默认白色背景 */
   :deep(.custom-dark-table) {
     background-color: #111827 !important;
     color: #d1d5db;
@@ -1287,7 +1602,10 @@ onUnmounted(() => {
 
     .el-table__empty-block {
       background-color: #111827 !important;
-      .el-table__empty-text { color: #9ca3af !important; }
+
+      .el-table__empty-text {
+        color: #9ca3af !important;
+      }
     }
   }
 }

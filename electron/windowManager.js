@@ -34,7 +34,7 @@ function createWindow() {
   try {
     mainWindow = new BrowserWindow({
       width: 1280,
-      height: 800,
+      height: 1000,
       frame: false,
       icon: app.isPackaged
         ? path.join(process.resourcesPath, "public/home.ico")
